@@ -9,9 +9,12 @@ typedef struct nbaDres {
 	int kolicina;
 }NBADRES;
 
+
 int izbornik();
 int izbornikPret();
 int izbornikSort();
+int particijaRastuci(NBADRES* polje, int lijevo, int desno);
+int particijaPadajuci(NBADRES* polje, int lijevo, int desno);
 void kreiranjeDat();
 void dodavanjeDresova();
 void azuriranje();
@@ -20,10 +23,10 @@ void ispisivanje(NBADRES*);
 void* pretragaIme(NBADRES*);
 void* pretragaCijena(NBADRES*);
 void zamjena(NBADRES*, NBADRES*);
-void selectionSortNajjefCijena(NBADRES*);
-void selectionSortNajskupCijena(NBADRES*);
 void brisanjeDresova(NBADRES*);
+void quickSortRastuci(NBADRES* polje, int lijevo, int desno);
+void quickSortPadajuci(NBADRES* polje, int lijevo, int desno);
 
 
 
-#endif // HEADER_H
+#endif // HEADER
