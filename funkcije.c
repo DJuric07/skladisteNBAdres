@@ -107,6 +107,12 @@ int izbornikSort() {
 	int uvijet = 0;
 	NBADRES* polje = NULL;
 	polje = (NBADRES*)ucitavanjeDresova();
+
+	if (polje == NULL) {
+		printf("Nema dresova za sortiranje.\n");
+		return 0;
+	}
+
 	printf("Sortiranje.\n\n");
 	printf("Opcija 1: Cijena od najjeftinijeg do najskupljeg\n");
 	printf("Opcija 2: Cijena od najskupljeg do najjeftinijeg\n");
@@ -116,15 +122,26 @@ int izbornikSort() {
 	system("cls");
 
 	switch (uvijet) {
-	case 1: selectionSortNajjefCijena(polje); break;
-	case 2: selectionSortNajskupCijena(polje); break;
-	case 3: return 89;
-	default: printf("\nPogresan unos!\n");
-
+	case 1:
+		quickSortRastuci(polje, 0, brojDresova - 1);
+		printf("Sortirani dresovi po cijeni od najjeftinijeg do najskupljeg:\n");
+		ispisivanje(polje);
+		break;
+	case 2:
+		quickSortPadajuci(polje, 0, brojDresova - 1);
+		printf("Sortirani dresovi po cijeni od najskupljeg do najjeftinijeg:\n");
+		ispisivanje(polje);
+		break;
+	case 3:
+		return 89;
+	default:
+		printf("\nPogresan unos!\n");
 	}
 
+	free(polje);
 	return uvijet;
 }
+
 
 void kreiranjeDat() {
 	FILE* fp = NULL;
@@ -251,7 +268,7 @@ void* pretragaCijena(NBADRES* polje) {
 	for (i = 0; i < brojDresova; i++) {
 		if (trazenaCijena == (polje + i)->cijena) {
 			printf("\nCijena dresa je pronadena!\n\n");
-			printf("\tIme: %s\tCijena: %d\tKolicina: %d\n\n",(polje + i)->ime, (polje + i)->cijena, (polje + i)->kolicina);
+			printf("\tIme: %s\tCijena: %d\tKolicina: %d\n\n", (polje + i)->ime, (polje + i)->cijena, (polje + i)->kolicina);
 			brojac++;
 		}
 	}
@@ -267,70 +284,48 @@ void zamjena(NBADRES* veci, NBADRES* manji) {
 	*veci = temp;
 }
 
-void selectionSortNajjefCijena(NBADRES* polje) {
-	int min = -1;
-	printf("Sortirani dresovi po cijeni od najjeftinijeg do najskupljeg.\n");
-	for (i = 0; i < brojDresova - 1; i++)
-	{
-		min = i;
-		for (j = i + 1; j < brojDresova; j++)
-		{
-			if ((polje + j)->cijena < (polje + min)->cijena) {
-				min = j;
-			}
-		}
-		zamjena((polje + i), (polje + min));
+void quickSortRastuci(NBADRES* polje, int lijevo, int desno) {
+	if (lijevo < desno) {
+		int pivot = particijaRastuci(polje, lijevo, desno);
+		quickSortRastuci(polje, lijevo, pivot - 1);
+		quickSortRastuci(polje, pivot + 1, desno);
 	}
-
-	for (i = 0; i < brojDresova; i++)
-	{
-		if (i == 0) {
-			printf("\tIme: %s\tCijena: %d\tKolicina: %d\n", (polje + i)->ime, (polje + i)->cijena, (polje + i)->kolicina);
-
-		}
-		else if (i > 0 && i < brojDresova - 1) {
-			printf("\tIme: %s\tCijena: %d\tKolicina: %d\n",  (polje + i)->ime, (polje + i)->cijena, (polje + i)->kolicina);
-
-		}
-		else {
-			printf("\tIme: %s\tCijena: %d\tKolicina: %d\n",  (polje + i)->ime, (polje + i)->cijena, (polje + i)->kolicina);
-
-		}
-	}
-	printf("\n");
 }
 
-void selectionSortNajskupCijena(NBADRES* polje) {
-	int min = -1;
-	printf("Sortirani dresovi po cijeni od najskupljeg do najjeftinijeg.\n");
-	for (i = 0; i < brojDresova - 1; i++)
-	{
-		min = i;
-		for (j = i + 1; j < brojDresova; j++)
-		{
-			if ((polje + j)->cijena > (polje + min)->cijena) {
-				min = j;
-			}
-		}
-		zamjena((polje + i), (polje + min));
+void quickSortPadajuci(NBADRES* polje, int lijevo, int desno) {
+	if (lijevo < desno) {
+		int pivot = particijaPadajuci(polje, lijevo, desno);
+		quickSortPadajuci(polje, lijevo, pivot - 1);
+		quickSortPadajuci(polje, pivot + 1, desno);
 	}
+}
 
-	for (i = 0; i < brojDresova; i++)
-	{
-		if (i == 0) {
-			printf("\tIme: %s\tCijena: %d\tKolicina: %d\n", (polje + i)->ime, (polje + i)->cijena, (polje + i)->kolicina);
+int particijaRastuci(NBADRES* polje, int lijevo, int desno) {
+	int pivot = polje[desno].cijena;
+	int i = (lijevo - 1);
 
-		}
-		else if (i > 0 && i < brojDresova - 1) {
-			printf("\tIme: %s\tCijena: %d\tKolicina: %d\n", (polje + i)->ime, (polje + i)->cijena, (polje + i)->kolicina);
-
-		}
-		else {
-			printf("\tIme: %s\tCijena: %d\tKolicina: %d\n", (polje + i)->ime, (polje + i)->cijena, (polje + i)->kolicina);
-
+	for (int j = lijevo; j <= desno - 1; j++) {
+		if (polje[j].cijena <= pivot) {
+			i++;
+			zamjena(&polje[i], &polje[j]);
 		}
 	}
-	printf("\n");
+	zamjena(&polje[i + 1], &polje[desno]);
+	return (i + 1);
+}
+
+int particijaPadajuci(NBADRES* polje, int lijevo, int desno) {
+	int pivot = polje[desno].cijena;
+	int i = (lijevo - 1);
+
+	for (int j = lijevo; j <= desno - 1; j++) {
+		if (polje[j].cijena >= pivot) {
+			i++;
+			zamjena(&polje[i], &polje[j]);
+		}
+	}
+	zamjena(&polje[i + 1], &polje[desno]);
+	return (i + 1);
 }
 
 void brisanjeDresova(NBADRES* polje) {
