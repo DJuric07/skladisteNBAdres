@@ -1,32 +1,34 @@
-#pragma once
 #ifndef HEADER_H
 #define HEADER_H
 
-typedef struct nbaDres {
-	int id;
-	char ime[25];
-	int cijena;
-	int kolicina;
-}NBADRES;
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
+#define MAX_NAZIV 50
 
-int izbornik();
-int izbornikPret();
-int izbornikSort();
-int particijaRastuci(NBADRES* polje, int lijevo, int desno);
-int particijaPadajuci(NBADRES* polje, int lijevo, int desno);
-void kreiranjeDat();
-void dodavanjeDresova();
-void azuriranje();
-void* ucitavanjeDresova();
-void ispisivanje(NBADRES*);
-void* pretragaIme(NBADRES*);
-void* pretragaCijena(NBADRES*);
-void zamjena(NBADRES*, NBADRES*);
-void brisanjeDresova(NBADRES*);
-void quickSortRastuci(NBADRES* polje, int lijevo, int desno);
-void quickSortPadajuci(NBADRES* polje, int lijevo, int desno);
+typedef enum {
+    DODAJ = 1,
+    AZURIRAJ,
+    ISPISI,
+    PRETRAZI,
+    SORTIRAJ,
+    OBRISI,
+    IZLAZ
+} Opcije;
 
+typedef struct {
+    int id;
+    char imeIgraca[MAX_NAZIV];
+    char tim[MAX_NAZIV];
+    float cijena;
+} NBADres;
 
+void dodajDres(FILE* datoteka);
+void azurirajDres(FILE* datoteka);
+void ispisiDresove(FILE* datoteka);
+void pretraziDres(FILE* datoteka);
+void sortirajDresove(FILE* datoteka, int nacin);
+void obrisiDres(FILE* datoteka);
 
-#endif // HEADER
+#endif
