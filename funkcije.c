@@ -1,31 +1,47 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "header.h"
 
-static void swap(NBADres* a, NBADres* b) {
+static void swapID(NBADres* a, NBADres* b) {
     NBADres temp = *a;
     *a = *b;
     *b = temp;
 }
 
-static int partition(NBADres* niz, int low, int high, int nacin) {
-    float pivot = niz[high].cijena; // koristim vrijednost cijene za usporedbu
+static int partitionID(NBADres* niz, int low, int high) {
+    int pivot = niz[high].id;
     int i = low - 1;
     for (int j = low; j < high; j++) {
-        if ((nacin == 1 && niz[j].cijena <= pivot) || (nacin == 2 && niz[j].cijena >= pivot)) {
+        if (niz[j].id <= pivot) {
             i++;
-            swap(&niz[i], &niz[j]);
+            swapID(&niz[i], &niz[j]);
         }
     }
-    swap(&niz[i + 1], &niz[high]); //nakon petlje pivot se stavlja iza posljednjeg manjeg elementa
+    swapID(&niz[i + 1], &niz[high]); //stavlja pivot na pravo mjesto
     return i + 1;
 }
 
-void quickSort(NBADres* niz, int low, int high, int nacin) {
+static void quickSortID(NBADres* niz, int low, int high) {
     if (low < high) {
-        int pi = partition(niz, low, high, nacin);
-        quickSort(niz, low, pi - 1, nacin);
-        quickSort(niz, pi + 1, high, nacin);
+        int pi = partitionID(niz, low, high);
+        quickSortID(niz, low, pi - 1); //rekurzivno sortira lijevi podniz
+        quickSortID(niz, pi + 1, high); //rekurzivno sortira desni podniz
     }
+}
+
+int usporediCijeneUzlazno(const void* a, const void* b) {
+    float c1 = ((NBADres*)a)->cijena;
+    float c2 = ((NBADres*)b)->cijena;
+    if (c1 < c2) return -1;
+    if (c1 > c2) return 1;
+    return 0;
+}
+
+int usporediCijeneSilazno(const void* a, const void* b) {
+    float c1 = ((NBADres*)a)->cijena;
+    float c2 = ((NBADres*)b)->cijena;
+    if (c1 < c2) return 1;
+    if (c1 > c2) return -1;
+    return 0;
 }
 
 void dodajDres(FILE* datoteka) {
@@ -106,8 +122,8 @@ void pretraziDres(FILE* datoteka) {
 
 void sortirajDresove(FILE* datoteka, int nacin) {
     fseek(datoteka, 0, SEEK_END);
-    long velicina = ftell(datoteka); // ftell određuje ukupnu veličinu datoteke u bajtovima
-    int broj = velicina / sizeof(NBADres); // izračunava koliko zapisa o NBA dresovima se nalazi u datoteci (1,2,3...)
+    long velicina = ftell(datoteka); //ftell određuje ukupnu veličinu datoteke u bajtovima
+    int broj = velicina / sizeof(NBADres); //izračunava koliko zapisa o NBA dresovima se nalazi u datoteci (1,2,3...)
     rewind(datoteka);
 
     if (broj == 0) {
@@ -115,17 +131,29 @@ void sortirajDresove(FILE* datoteka, int nacin) {
         return;
     }
 
-    NBADres* niz = (NBADres*)malloc(broj * sizeof(NBADres)); // malloc - funkcija za dinamičku alokaciju memorije,()ukupna veličina memorije koja se traži
+    NBADres* niz = (NBADres*)malloc(broj * sizeof(NBADres)); //malloc-funkcija za dinamicku alokaciju memorije,()ukupna velicina memorije koja se trazi
     if (!niz) {
         perror("Greska pri alokaciji memorije");
         return;
     }
 
-    fread(niz, sizeof(NBADres), broj, datoteka); // fread učitava podatke iz datoteke u prethodno alocirani niz niz
-    quickSort(niz, 0, broj - 1, nacin); // niz - niz za sortirati, 0 - početni indeks, broj - 1 - završni indeks
+    fread(niz, sizeof(NBADres), broj, datoteka); // fread učitava podatke iz datoteke u prethodno alocirani niz 
+
+    if (nacin == 1)
+        qsort(niz, broj, sizeof(NBADres), usporediCijeneUzlazno); //niz - pokazivac na pocetak niza koji se sortira
+    else if (nacin == 2)
+        qsort(niz, broj, sizeof(NBADres), usporediCijeneSilazno);
+    else if (nacin == 3) {
+        quickSortID(niz, 0, broj - 1); // niz - pokazivac na niz dresova iz datoteke
+    }
+    else {
+        printf("Nepoznat nacin sortiranja.\n");
+        free(niz);
+        return;
+    }
 
     rewind(datoteka);
-    fwrite(niz, sizeof(NBADres), broj, datoteka); //zapisuje cijeli sortirani niz natrag u datoteku
+    fwrite(niz, sizeof(NBADres), broj, datoteka);
     fflush(datoteka);
 
     printf("\n--- Sortirani dresovi ---\n");
@@ -135,8 +163,10 @@ void sortirajDresove(FILE* datoteka, int nacin) {
     }
     printf("--------------------------\n");
 
-    free(niz); // oslobađa alociranu memoriju
+    free(niz);
+    niz = NULL;
 }
+
 
 void obrisiDres(FILE* datoteka) {
     int trazeniID;
@@ -159,7 +189,7 @@ void obrisiDres(FILE* datoteka) {
     fclose(datoteka);
     fclose(privremena);
 
-    remove("dresovi.bin"); //originalna datoteka se briše
+    remove("dresovi.bin"); //originalna datoteka se brise
     rename("temp.bin", "dresovi.bin"); //privremena datoteka se preimenuje u ime originalne datoteke
 
     printf("Dres obrisan ako je postojao.\n");
