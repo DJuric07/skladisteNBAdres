@@ -31,4 +31,7 @@ void pretraziDres(FILE* datoteka);
 void sortirajDresove(FILE* datoteka, int nacin);
 void obrisiDres(FILE* datoteka);
 
+int usporediCijeneUzlazno(const void* a, const void* b);
+int usporediCijeneSilazno(const void* a, const void* b);
+
 #endif
