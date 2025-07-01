@@ -31,6 +31,7 @@ int main() {
             int nacin;
             printf("1. Sortiraj po cijeni od najjeftinijeg do najskupljeg)\n");
             printf("2. Sortiraj po cijeni od najskupljeg do najjeftinijeg\n");
+            printf("3. Sortiraj po ID-u\n");
             printf("Odaberi nacin: ");
             scanf("%d", &nacin);
             sortirajDresove(datoteka, nacin);
